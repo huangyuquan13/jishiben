@@ -205,7 +205,6 @@ function goToStats() { uni.navigateTo({ url: '/pages/stats/stats' }); }
 .cat-name { font-size: 22rpx; color: #64748b; font-weight: 600; }
 .form-row { display: flex; gap: 24rpx; align-items: flex-start; }
 .date-picker { flex: 1; z-index: 10; }
-.native-date { flex: 1; border: 1rpx solid #e2e8f0; border-radius: 16rpx; padding: 20rpx; font-size: 28rpx; color: #1e293b; background: #f8fafc; }
 .note-input { flex: 1; }
 .submit-btn { background: #10b981; border-radius: 20rpx; padding: 24rpx; text-align: center; color: #fff; font-size: 28rpx; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10rpx; margin: 24rpx 36rpx 36rpx; }
 .submit-btn:active { transform: scale(0.98); }
