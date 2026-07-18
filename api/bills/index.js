@@ -4,7 +4,6 @@ import { getUserId } from '../_lib/jwt.js';
 import { v4 as uuid } from 'uuid';
 import { eq, and, desc, sql } from 'drizzle-orm';
 
-// GET /api/bills?page=1&pageSize=20&type=expense&month=2026-07
 export async function GET(req) {
   const userId = getUserId(req);
   if (!userId) return Response.json({ code: 401, message: '请先登录' }, { status: 401 });
@@ -13,17 +12,13 @@ export async function GET(req) {
   const page = parseInt(url.searchParams.get('page')) || 1;
   const pageSize = parseInt(url.searchParams.get('pageSize')) || 20;
   const type = url.searchParams.get('type');
-  const month = url.searchParams.get('month'); // YYYY-MM
+  const month = url.searchParams.get('month');
 
   const conditions = [eq(bills.userId, userId)];
   if (type === 'income' || type === 'expense') conditions.push(eq(bills.type, type));
   if (month) {
-    conditions.push(
-      and(
-        sql`${bills.billDate} >= ${month + '-01'}`,
-        sql`${bills.billDate} <= ${month + '-31'}`
-      )
-    );
+    conditions.push(sql`${bills.billDate} >= ${month + '-01'}`);
+    conditions.push(sql`${bills.billDate} <= ${month + '-31'}`);
   }
 
   const list = await db
@@ -37,7 +32,6 @@ export async function GET(req) {
   return Response.json({ code: 0, data: { records: list, page, pageSize } });
 }
 
-// POST /api/bills
 export async function POST(req) {
   const userId = getUserId(req);
   if (!userId) return Response.json({ code: 401, message: '请先登录' }, { status: 401 });
@@ -46,7 +40,7 @@ export async function POST(req) {
   const { type, amount, category, note, billDate } = body;
 
   if (!type || !amount || !category || !billDate) {
-    return Response.json({ code: 400, message: '缺少必填字段' });
+    return Response.json({ code: 400, message: '缺少必填字段' }, { status: 400 });
   }
 
   const record = {
@@ -61,11 +55,4 @@ export async function POST(req) {
 
   await db.insert(bills).values(record);
   return Response.json({ code: 0, data: record });
-}
-
-// Vercel 路由分发
-export default async function handler(req) {
-  if (req.method === 'GET') return GET(req);
-  if (req.method === 'POST') return POST(req);
-  return Response.json({ code: 405, message: 'Method not allowed' }, { status: 405 });
 }
