@@ -1,205 +1,203 @@
-# 记账小工具 (jiZhang)
+# 多端记账应用 (jishiben)
 
-> 全栈练手项目：uni-app 跨端前端 + SpringBoot 后端 + natapp 内网穿透上线
+> uni-app (Vue3) + Vercel Serverless + Turso 的个人跨端记账工具
 > 一套代码 → 微信小程序 + H5 + Android APK 三端运行
+> 
+> **H5 在线**: https://jishiben-6zff-ruby.vercel.app
+
+---
+
+## 🎯 对标岗位：成都前端实习
+
+成都中小公司前端实习 JD 关键词：**uni-app、Vue3、小程序、H5、接口联调、uni-ui/Element Plus、AI 工具、线上可访问项目**。
+
+| JD 要求 | 本项目对应 |
+|---------|-----------|
+| 基于 uni-app 开发跨端页面 | ✅ H5 + 小程序 + Android 三端 |
+| 调用接口渲染数据 | ✅ 8 个 RESTful API，JWT 鉴权 |
+| 能看懂基础 Java 代码 | ✅ 实习中用过 Spring Boot，CLAUDE.md 保留 Java 基础知识 |
+| 有 uni-app 实际项目经验 | ✅ 本项目，源码 + 在线链接 |
+| 独立发过小程序/H5，可展示链接 | ✅ H5 已在 Vercel 上线 |
+| 对 AI 编程有了解 | ✅ Claude Code 辅助全栈开发 |
+| 有 UI/UX 审美 | ✅ uni-ui 组件库 + 统一 Emerald 主题色 |
+
+---
 
 ## 技术栈
 
-| 层 | 技术 | 版本 |
-|---|------|------|
-| 前端框架 | uni-app (Vue3 Composition API) | Vue 3 |
-| UI 组件库 | uni-ui（官方组件库） | — |
-| 构建工具 | HBuilderX + Vite | — |
-| 后端框架 | SpringBoot | 3.2.0 |
-| ORM | Spring Data JPA + Hibernate | 6.3 |
-| 数据库 | H2（文件模式，开发用） / MySQL（上线用） | — |
-| 内网穿透 | natapp HTTP 隧道 | 免费版 |
-| 跨端发布 | 微信小程序 / H5 / Android APK | — |
+| 层 | 技术 | 说明 |
+|----|------|------|
+| 前端框架 | uni-app (Vue3 Composition API) | HBuilderX 管理 |
+| UI 组件 | uni-ui | 官方组件库，小程序原生风格 |
+| 状态管理 | Pinia | 用户登录态 + localStorage 持久化 |
+| HTTP | uni.request | 封装 JWT 自动带 token，401 自动跳登录 |
+| 图表 | ECharts | 暂时用文本统计替代，可后续升级 |
+| 后端 | Vercel Serverless Functions | 免费，自动部署，无需服务器 |
+| 数据库 | Turso (SQLite Edge) | 免费 9GB，HTTP 协议，全球边缘节点 |
+| ORM | Drizzle ORM | 类型安全，SQLite 方言 |
+| 部署 | Vercel | 前端 H5 + API 统一域名，推送即部署 |
+
+---
 
 ## 项目结构
 
 ```
-F:\Ayanjiusuo\hx\uniapp\jishiben\
-├── CLAUDE.md                    ← 本文件
-├── front\                       ← uni-app 前端
-│   ├── App.vue                  ← 应用入口，onLaunch/onShow 从 API 拉数据
-│   ├── pages.json               ← 路由 + TabBar 配置
-│   ├── manifest.json            ← 应用配置（权限/图标/启动页）
-│   ├── uni.scss                 ← 全局 SCSS 变量（主题色/间距/阴影）
-│   ├── utils\
-│   │   └── api.js               ← API 层：封装 uni.request + 条件编译切换地址
-│   ├── pages\
-│   │   ├── home\home.vue        ← 首页：月度概览 + 记一笔弹窗 + 最近3笔
-│   │   ├── bills\bills.vue      ← 账单页：月份筛选 + 搜索 + 日期分组列表
-│   │   ├── my\my.vue            ← 我的页：统计卡片 + 预算/分类/关于
-│   │   └── stats\stats.vue      ← 统计详情：分类占比 + 每日趋势
-│   ├── uni_modules\             ← uni-ui 全部组件（已安装）
-│   └── static\tab\              ← TabBar 图标（6个，81×81 PNG）
+jishiben/
+├── front/                       # uni-app 前端（HBuilderX 打开此目录）
+│   ├── pages/
+│   │   ├── home/home.vue        # 首页：月度汇总卡片 + 记账弹窗 + 最近5笔
+│   │   ├── bills/bills.vue      # 账单列表：月份切换 + 类型筛选 + 左滑删除
+│   │   ├── stats/stats.vue      # 统计页：分类支出排行柱状条
+│   │   └── my/my.vue            # 我的：输入昵称登录/注册/切换账号/退出
+│   ├── api/
+│   │   ├── request.js           # uni.request 封装（BASE_URL + JWT + 401拦截）
+│   │   ├── auth.js              # 登录 API
+│   │   └── bills.js             # 账单 CRUD + 统计 API
+│   ├── store/
+│   │   └── user.js              # Pinia store：token/nickname/isLogin + login/logout
+│   ├── pages.json               # 路由 + TabBar（首页/账单/我的）
+│   ├── manifest.json            # 多端配置
+│   ├── main.js                  # 入口：createSSRApp + app.use(createPinia())
+│   └── App.vue                  # 根组件
 │
-├── bank\                        ← SpringBoot 后端
-│   ├── pom.xml                  ← Maven：SpringBoot + JPA + H2 + MySQL
-│   ├── sql\init.sql             ← MySQL 建表语句 + 初始化数据
-│   └── src\main\java\com\jizhang\
-│       ├── JizhangApplication.java        ← 启动类（端口 8080）
-│       ├── entity\Bill.java              ← 账单实体（JPA → t_bill 表）
-│       ├── repository\BillRepository.java ← JPA 数据访问层
-│       ├── service\BillService.java       ← 业务逻辑（CRUD + 统计 + 趋势）
-│       ├── controller\
-│       │   ├── BillController.java        ← 账单 + 统计 API
-│       │   └── SettingsController.java    ← 设置 + 分类管理 API
-│       └── config\
-│           ├── CorsConfig.java            ← 跨域 + UTF-8 编码过滤器
-│           └── DataInitializer.java       ← 启动时自动插入12条初始数据
+├── api/                         # Vercel Serverless Functions
+│   ├── _lib/
+│   │   ├── db.js                # Turso 连接（createClient → drizzle）
+│   │   ├── schema.js            # Drizzle 表定义：users / bills / categories
+│   │   └── jwt.js               # JWT 签发 / 验证 / 提取 userId
+│   ├── auth/login.js            # POST /api/auth/login（新用户自动注册）
+│   ├── bills/index.js           # GET /api/bills（分页+筛选）/ POST 新增
+│   ├── bills/[id].js            # PUT/DELETE /api/bills/:id
+│   ├── bills/stats.js           # GET /api/bills/stats（月度汇总+分类排行）
+│   ├── init-db.js               # 建表脚本（node init-db.js）
+│   ├── test-api.js              # 测试脚本（CRUD 全链路验证）
+│   └── drizzle.config.js        # Drizzle Kit 配置
 │
-├── natapp\                      ← 内网穿透客户端
-│   ├── natapp.exe
-│   └── config.ini               ← authtoken（不要泄露！）
-│
-└── 记账小工具.zip               ← Gemini 生成的 React 原型（仅供参考）
+├── vercel.json                  # Vercel 部署配置
+├── .gitignore                   # 排除 node_modules/.env/bank/计划/压缩包等
+└── CLAUDE.md                    # 本文件
 ```
 
-## 如何运行
+---
 
-### 开发模式（小程序模拟器）
+## 数据库设计
 
-```bash
-# 终端1：启动后端
-cd bank
-mvn spring-boot:run
+```sql
+-- 用户表（昵称即 openid，新用户自动注册）
+CREATE TABLE users (
+  id TEXT PRIMARY KEY,
+  openid TEXT UNIQUE,
+  nickname TEXT DEFAULT '用户',
+  avatar TEXT,
+  created_at TEXT DEFAULT (datetime('now'))
+);
 
-# HBuilderX：运行 → 运行到微信小程序
+-- 账单表
+CREATE TABLE bills (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  type TEXT NOT NULL CHECK(type IN ('income', 'expense')),
+  amount REAL NOT NULL CHECK(amount > 0),
+  category TEXT NOT NULL,
+  note TEXT,
+  bill_date TEXT NOT NULL,
+  created_at TEXT DEFAULT (datetime('now'))
+);
+
+-- 分类表（预留，当前版本用前端硬编码分类）
+CREATE TABLE categories (
+  id TEXT PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id),
+  name TEXT NOT NULL,
+  icon TEXT DEFAULT 'default',
+  type TEXT NOT NULL CHECK(type IN ('income', 'expense')),
+  sort_order INTEGER DEFAULT 0
+);
 ```
 
-### App 真机调试（natapp 内网穿透）
-
-```bash
-# 1. 启动后端
-cd bank && mvn spring-boot:run
-
-# 2. 启动 natapp
-cd natapp && .\natapp.exe
-
-# 3. HBuilderX → 发行 → 原生App-云打包
-#    → 选 Android + 公共测试证书 → 打包 → 下载 APK → 安装
-```
-
-### 给同学用（前提：你电脑开着 + 后端跑着 + natapp 连着）
-
-natapp 公网地址写在 APK 里，同学装好即用，无需配置。
+---
 
 ## API 接口
 
-Base: `http://localhost:8080/api`（开发）/ natapp 域名（公网）
+Base: `https://jishiben-6zff-ruby.vercel.app`
 
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/bills?month=2026-07` | 按月份查账单 |
-| POST | `/bills` | 添加账单 |
-| DELETE | `/bills/{id}` | 删除账单 |
-| GET | `/bills/stats?month=2026-07` | 月度统计（总收支 + 分类占比） |
-| GET | `/bills/trend?month=2026-07` | 每日交易趋势 |
-| GET | `/settings` | 获取用户设置 |
-| PUT | `/settings` | 更新设置 |
-| POST | `/settings/categories` | 添加分类 |
-| DELETE | `/settings/categories/{code}` | 删除分类 |
+| 方法 | 路径 | 说明 | Auth |
+|------|------|------|------|
+| POST | `/api/auth/login` | 登录/注册 `{openid}` → token | 无 |
+| GET | `/api/bills?page=1&pageSize=20&type=expense&month=2026-07` | 账单列表 | JWT |
+| POST | `/api/bills` | 新增账单 | JWT |
+| PUT | `/api/bills/:id` | 修改账单 | JWT |
+| DELETE | `/api/bills/:id` | 删除账单 | JWT |
+| GET | `/api/bills/stats?month=2026-07` | 月度统计+分类排行 | JWT |
 
-## 数据模型
+---
 
-```javascript
-// 一笔账单
-{
-    id: Long,           // 自增主键
-    type: String,       // "expense" | "income"
-    amount: Double,     // 金额
-    category: String,   // 分类代码
-    categoryName: String, // 分类名称（中文）
-    categoryIcon: String, // 分类图标（emoji）
-    date: LocalDate,    // YYYY-MM-DD
-    note: String,       // 备注
-    createTime: Long    // 时间戳
-}
+## 常用命令
+
+```bash
+# 前端开发：HBuilderX 打开 front/ 目录，点击「运行 → 运行到浏览器」
+
+# 后端本地测试
+cd api
+node test-api.js          # CRUD 全链路测试
+node init-db.js           # 重新建表（仅首次/new schema 变更时）
+
+# 部署：推送后 Vercel 自动部署
+git add -A && git commit -m "feat: xxx" && git push
 ```
 
-## 核心功能
+---
 
-1. **记一笔** — 半屏弹窗表单（金额/分类/日期/备注），uni-popup + uni-easyinput + uni-datetime-picker
-2. **账单列表** — 月份切换 + 搜索 + 类型/分类筛选 + 按日期分组展示
-3. **月度统计** — 分类占比进度条 + 每日收支趋势图
-4. **预算管理** — 设置月预算，进度条实时反馈（绿/黄/红 三色），超支提醒
-5. **分类管理** — 自定义收支分类 + emoji 图标选择
-6. **数据持久化** — H2 文件数据库 + Spring Data JPA + 启动自动填充初始数据
-
-## 架构设计要点
-
-### 前端数据流
+## 登录流程
 
 ```
-App.vue onLaunch/onShow → api.getBills() → 存 globalData
-    ↓
-Page onShow → api.getBills() → 更新页面数据
-    ↓
-用户保存 → api.addBill() → loadData() 重拉 → 页面刷新
+用户输入昵称 → uni.request POST /api/auth/login {openid: "昵称"}
+  → 后端查 users 表 → 不存在则 INSERT（自动注册）
+  → 返回 JWT token + userId + nickname
+  → 前端存 localStorage（token/userId/nickname）
+  → 后续请求自动带 Authorization: Bearer xxx
+  → 401 → 清 token → 跳登录页
 ```
 
-每页 `onShow` 时从 API 拉数据，不依赖本地缓存。保存/删除后重拉保证一致性。
+---
 
-### API 层条件编译
+## 当前版本已实现
 
-```javascript
-// #ifdef APP-PLUS
-const BASE_URL = 'http://natapp域名/api';    // App → 公网
-// #endif
-// #ifdef H5
-const BASE_URL = 'http://localhost:8080/api'; // 浏览器 → 本地
-// #endif
-```
+- [x] 登录/注册（昵称输入 → 自动注册 → JWT 鉴权）
+- [x] 记账增删改查（分类选择 + 日期 + 备注 + 金额校验）
+- [x] 月度收支汇总卡片（收入/支出/结余）
+- [x] 账单列表（月份切换 + 收支筛选）
+- [x] 统计排行（分类支出柱状条）
+- [x] 退出登录（清数据 + 切换账号）
+- [x] 云端部署（Vercel H5 在线可访问）
 
-### 后端分层
+## 待完成（按优先级）
 
-```
-Controller → Service → Repository (JPA) → H2/MySQL
-   (REST)     (业务)      (数据访问)      (持久化)
-```
+- [ ] uni-app 发行 H5 → 替换 Vercel 前端为 uni-app H5 版本
+- [ ] 微信小程序发行 + 体验版二维码
+- [ ] ECharts 饼图/折线图集成
+- [ ] 分类管理（自定义分类，存入数据库）
+- [ ] 预算设置与超支提醒
 
-## 已解决的问题（踩坑记录）
+---
 
-| 问题 | 解决 |
-|------|------|
-| natapp TCP 隧道 502 | HTTP 隧道才支持 Web 访问 |
-| natapp 连不上后端 | 先启后端再启 natapp |
-| H2 重启数据全丢 | `jdbc:h2:mem` → `jdbc:h2:file` |
-| 中文存成 ?? | 添加 CharacterEncodingFilter + UTF-8 配置 |
-| GET 500 报 DateTimeParseException | 前端参数 `'2026'` → `'2026-07'` |
-| POST 400 日期解析失败 | Entity 加 `@JsonFormat(pattern="yyyy-MM-dd")` |
-| APK 打包后还是旧代码 | 清除 `unpackage/dist` 和 `unpackage/cache` |
-| Android 权限格式报错 | 用 `<uses-permission android:name="..."/>` 格式 |
-| 首页最近3笔不更新 | `recentBills` 按 `createTime` 降序排序 |
-| Hibernate 方言错误 | 显式指定 `H2Dialect` |
+## 与旧版（bank/）的区别
 
-详见 `C:\Users\33039\Desktop\vue3教程\移动端学习\内网穿透前后端联调踩坑记录.md`
+旧版已删除。旧版架构：uni-app + Spring Boot + H2 + natapp 内网穿透。
+新版架构：uni-app + Vercel Serverless + Turso（无需本地后端，24h 在线）。
 
-## uni-app 知识点速查
+---
 
-| 概念 | uni-app 写法 |
-|------|-------------|
-| 路由配置 | `pages.json` 中 `pages` 数组 |
-| TabBar | `pages.json` 中 `tabBar.list` |
-| 页面跳转 | `uni.navigateTo` / `uni.switchTab` |
-| 生命周期 | `onLoad` / `onShow` / `onReady` / `onHide` / `onUnload` |
-| 数据更新 | Vue3 响应式：`ref().value = xxx` |
-| 本地缓存 | `uni.setStorageSync` / `uni.getStorageSync` |
-| 网络请求 | `uni.request` |
-| 条件编译 | `#ifdef APP-PLUS` / `#ifdef MP-WEIXIN` / `#ifdef H5` |
-| 跨端发布 | HBuilderX → 发行 → 选择目标平台 |
+## 面试话术速查
 
-## 开发流程回顾
+### 项目介绍（30秒版）
+> "多端记账应用，uni-app + Vue3 开发，一套代码发小程序、H5、Android。后端用 Vercel Serverless + Turso 数据库，自建 3 张表 8 个接口，JWT 鉴权。H5 部署在 Vercel，扫码就能用。"
 
-此项目完整经历了：
-1. **需求设计** — brainstorming 选定记账工具
-2. **原型参考** — Gemini 生成 React 版本 → 翻译为 uni-app Vue3
-3. **前端开发** — uni-ui 组件库 + 条件编译 + 多端适配
-4. **后端开发** — SpringBoot 3.x + JPA + H2 → MySQL
-5. **联调调试** — natapp 内网穿透 + 中文编码 + 日期格式等 12 个坑
-6. **打包发布** — Android APK 云打包 + 图标/启动页配置
+### 为什么用 Turso？
+> "SQLite 边缘数据库，免费 9GB，HTTP 协议访问快。个人项目够用，后续换 PostgreSQL 改一行配置。"
 
-> 最后更新：2026年7月8日
+### 登录怎么做的？
+> "输入昵称 → 后端查库 → 新用户自动注册 INSERT → 老用户直接返回 JWT → 前端存 token → 请求自动带 Authorization → 401 清 token 回登录。"
+
+### 跟后端怎么联调的？
+> "RESTful API，JSON 格式。前端 uni.request 封装了 baseURL 和错误处理。后端响应 `{code:0, data:...}` 表示成功，非 0 前端 toast 提示。联调时用 curl 和 test-api.js 逐个接口验证。"

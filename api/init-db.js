@@ -16,7 +16,8 @@ const turso = createClient({
 const SQL = `
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
-  openid TEXT UNIQUE,
+  username TEXT UNIQUE,
+  password_hash TEXT,
   nickname TEXT DEFAULT '用户',
   avatar TEXT,
   created_at TEXT DEFAULT (datetime('now'))

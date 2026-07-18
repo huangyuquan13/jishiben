@@ -1,35 +1,30 @@
 import { db } from '../_lib/db.js';
 import { users } from '../_lib/schema.js';
 import { sign } from '../_lib/jwt.js';
-import { v4 as uuid } from 'uuid';
 import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
 
 export async function POST(req) {
-  const { code, openid: inputOpenid } = await req.json();
+  const { username, password } = await req.json();
 
-  const openid = inputOpenid || `dev-${code || uuid().slice(0, 8)}`;
+  if (!username || !password) {
+    return Response.json({ code: 400, message: '用户名和密码不能为空' }, { status: 400 });
+  }
 
-  let [user] = await db.select().from(users).where(eq(users.openid, openid));
-
+  const [user] = await db.select().from(users).where(eq(users.username, username));
   if (!user) {
-    const newUser = {
-      id: uuid(),
-      openid,
-      nickname: '用户' + openid.slice(-4),
-    };
-    await db.insert(users).values(newUser);
-    user = newUser;
+    return Response.json({ code: 401, message: '用户名或密码错误' }, { status: 401 });
+  }
+
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) {
+    return Response.json({ code: 401, message: '用户名或密码错误' }, { status: 401 });
   }
 
   const token = sign(user.id);
 
   return Response.json({
     code: 0,
-    data: {
-      token,
-      userId: user.id,
-      nickname: user.nickname,
-      avatar: user.avatar,
-    },
+    data: { token, userId: user.id, nickname: user.nickname },
   });
 }

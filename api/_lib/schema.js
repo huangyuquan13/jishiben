@@ -4,7 +4,8 @@ import { sql } from 'drizzle-orm';
 // 用户表
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
-  openid: text('openid').unique(),
+  username: text('username').unique(),
+  passwordHash: text('password_hash'),
   nickname: text('nickname').default('用户'),
   avatar: text('avatar'),
   createdAt: text('created_at').default(sql`(datetime('now'))`),
