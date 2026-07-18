@@ -90,10 +90,10 @@
                         <uni-datetime-picker v-model="formDate" type="date" class="date-picker" />
                         <uni-easyinput v-model="formNote" placeholder="例如：午餐外卖" :input-border="true" class="note-input" />
                     </view>
-                    <view class="submit-btn" @click="submitBill">
-                        <uni-icons type="checkmarkempty" size="18" color="#fff" />
-                        <text>保存账单</text>
-                    </view>
+                </view>
+                <view class="submit-btn" @click="submitBill">
+                    <uni-icons type="checkmarkempty" size="18" color="#fff" />
+                    <text>保存账单</text>
                 </view>
             </view>
         </uni-popup>
@@ -189,11 +189,11 @@ function goToStats() { uni.navigateTo({ url: '/pages/stats/stats' }); }
 .bill-date { font-size: 22rpx; color: #94a3b8; font-family: monospace; }
 .text-expense { font-size: 28rpx; font-weight: 700; color: #f43f5e; font-family: monospace; }
 .text-income { font-size: 28rpx; font-weight: 700; color: #10b981; font-family: monospace; }
-.popup-content { border-radius: 40rpx 40rpx 0 0; max-height: 85vh; overflow-y: auto; padding-bottom: 60rpx; }
-.drawer-handle { width: 80rpx; height: 8rpx; background: #e2e8f0; border-radius: 4rpx; margin: 16rpx auto; }
-.drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 16rpx 36rpx; border-bottom: 1rpx solid #f8fafc; }
-.drawer-title { font-size: 30rpx; font-weight: 700; color: #1e293b; }
-.drawer-form { padding: 0 36rpx; }
+.popup-content { border-radius: 40rpx 40rpx 0 0; max-height: 65vh; overflow-y: auto; padding-bottom: 32rpx; }
+.drawer-handle { width: 80rpx; height: 8rpx; background: #e2e8f0; border-radius: 4rpx; margin: 12rpx auto; }
+.drawer-header { display: flex; justify-content: space-between; align-items: center; padding: 12rpx 36rpx; border-bottom: 1rpx solid #f8fafc; }
+.drawer-title { font-size: 28rpx; font-weight: 700; color: #1e293b; }
+.drawer-form { padding: 0 28rpx; }
 .form-error { background: #fef2f2; border: 1rpx solid #fecaca; border-radius: 16rpx; padding: 16rpx; font-size: 24rpx; color: #dc2626; margin: 20rpx 0; }
 .type-toggle { display: flex; background: #f1f5f9; border-radius: 16rpx; padding: 6rpx; }
 .toggle-btn { flex: 1; text-align: center; padding: 18rpx 0; border-radius: 14rpx; font-size: 28rpx; font-weight: 600; color: #94a3b8; }
@@ -204,8 +204,9 @@ function goToStats() { uni.navigateTo({ url: '/pages/stats/stats' }); }
 .cat-selected { border-color: #10b981; background: #ecfdf5; }
 .cat-name { font-size: 22rpx; color: #64748b; font-weight: 600; }
 .form-row { display: flex; gap: 24rpx; align-items: flex-start; }
-.date-picker { flex: 1; }
+.date-picker { flex: 1; z-index: 10; }
+.native-date { flex: 1; border: 1rpx solid #e2e8f0; border-radius: 16rpx; padding: 20rpx; font-size: 28rpx; color: #1e293b; background: #f8fafc; }
 .note-input { flex: 1; }
-.submit-btn { background: #10b981; border-radius: 20rpx; padding: 24rpx; text-align: center; color: #fff; font-size: 28rpx; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10rpx; margin-top: 24rpx; }
+.submit-btn { background: #10b981; border-radius: 20rpx; padding: 24rpx; text-align: center; color: #fff; font-size: 28rpx; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10rpx; margin: 24rpx 36rpx 36rpx; }
 .submit-btn:active { transform: scale(0.98); }
 </style>

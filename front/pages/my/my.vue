@@ -14,27 +14,29 @@
         </view>
 
         <view class="menu-card">
-            <!-- 未登录：注册 / 登录 Tab -->
-            <view v-if="!user.isLogin" class="auth-form">
-                <view class="auth-tabs">
-                    <text :class="['auth-tab', tab === 'login' ? 'active' : '']" @click="tab = 'login'">登录</text>
-                    <text :class="['auth-tab', tab === 'register' ? 'active' : '']" @click="tab = 'register'">注册</text>
-                </view>
-
-                <view v-if="tab === 'register'">
-                    <input v-model="regNickname" class="form-input" placeholder="昵称（如：小明）" maxlength="20" />
-                </view>
+            <!-- 登录表单（默认） -->
+            <view v-if="!user.isLogin && page === 'login'" class="auth-form">
+                <view class="form-title">登录</view>
                 <input v-model="authUsername" class="form-input" placeholder="用户名" maxlength="20" />
                 <input v-model="authPassword" class="form-input" type="password" placeholder="密码" />
                 <text v-if="authError" class="auth-error">{{ authError }}</text>
+                <view class="form-btn" @click="handleLogin">登录</view>
+                <text class="form-link" @click="page = 'register'">没有账号？点击注册 →</text>
+            </view>
 
-                <view class="form-btn" @click="handleAuth">
-                    {{ tab === 'login' ? '登录' : '注册' }}
-                </view>
+            <!-- 注册表单 -->
+            <view v-if="!user.isLogin && page === 'register'" class="auth-form">
+                <view class="form-title">注册</view>
+                <input v-model="regNickname" class="form-input" placeholder="昵称（如：小明）" maxlength="20" />
+                <input v-model="authUsername" class="form-input" placeholder="用户名" maxlength="20" />
+                <input v-model="authPassword" class="form-input" type="password" placeholder="密码（至少4位）" />
+                <text v-if="authError" class="auth-error">{{ authError }}</text>
+                <view class="form-btn" @click="handleRegister">注册</view>
+                <text class="form-link" @click="page = 'login'">已有账号？去登录 →</text>
             </view>
 
             <!-- 已登录 -->
-            <uni-list v-else>
+            <uni-list v-if="user.isLogin">
                 <uni-list-item title="退出登录" clickable @click="handleLogout">
                     <template #left><view class="menu-icon icon-red"><uni-icons type="closeempty" size="18" color="#f43f5e" /></view></template>
                 </uni-list-item>
@@ -51,8 +53,7 @@
             <uni-card margin="24rpx">
                 <text class="about-text">💰 小记 — 多端记账 v1.0
 Vue3 + uni-app + Turso + Vercel
-H5: jishiben-6zff-ruby.vercel.app
-一套代码 · 三端运行 · 云端同步</text>
+H5: jishiben-6zff-ruby.vercel.app</text>
             </uni-card>
         </view>
     </view>
@@ -63,36 +64,47 @@ import { ref } from 'vue';
 import { useUserStore } from '@/store/user.js';
 
 const user = useUserStore();
-const tab = ref('login');
+const page = ref('login');
 const authUsername = ref('');
 const authPassword = ref('');
 const regNickname = ref('');
 const authError = ref('');
 const showAbout = ref(false);
 
-async function handleAuth() {
+async function handleLogin() {
   authError.value = '';
   const u = authUsername.value.trim();
   const p = authPassword.value.trim();
-  if (!u || !p) { authError.value = '请填写完整'; return; }
-  if (p.length < 4) { authError.value = '密码至少 4 位'; return; }
-
+  if (!u || !p) { authError.value = '请输入用户名和密码'; return; }
   try {
-    if (tab.value === 'login') {
-      await user.doLogin(u, p);
-    } else {
-      await user.doRegister(u, p, regNickname.value.trim() || u);
-    }
-    uni.showToast({ title: tab.value === 'login' ? '登录成功' : '注册成功', icon: 'success' });
+    await user.doLogin(u, p);
+    uni.showToast({ title: '登录成功', icon: 'success' });
     setTimeout(() => uni.switchTab({ url: '/pages/home/home' }), 500);
   } catch (e) {
-    authError.value = e.message || '操作失败，请检查网络';
+    authError.value = e.message || '登录失败，请检查网络';
+  }
+}
+
+async function handleRegister() {
+  authError.value = '';
+  const u = authUsername.value.trim();
+  const p = authPassword.value.trim();
+  if (!u || !p) { authError.value = '请填写完整信息'; return; }
+  if (p.length < 4) { authError.value = '密码至少 4 位'; return; }
+  try {
+    const nick = regNickname.value.trim() || u;
+    await user.doRegister(u, p, nick);
+    uni.showToast({ title: '注册成功', icon: 'success' });
+    setTimeout(() => uni.switchTab({ url: '/pages/home/home' }), 500);
+  } catch (e) {
+    authError.value = e.message || '注册失败，请检查网络';
   }
 }
 
 function handleLogout() {
   user.logout();
   authUsername.value = ''; authPassword.value = ''; regNickname.value = '';
+  page.value = 'login';
   uni.showToast({ title: '已退出', icon: 'none' });
 }
 </script>
@@ -111,12 +123,11 @@ function handleLogout() {
 .icon-red { background: #fef2f2; }
 
 .auth-form { padding: 32rpx; }
-.auth-tabs { display: flex; background: #f1f5f9; border-radius: 16rpx; padding: 6rpx; margin-bottom: 24rpx; }
-.auth-tab { flex: 1; text-align: center; padding: 18rpx 0; border-radius: 14rpx; font-size: 28rpx; font-weight: 600; color: #94a3b8; }
-.auth-tab.active { background: #fff; color: #10b981; box-shadow: 0 2rpx 8rpx rgba(0,0,0,0.06); }
+.form-title { font-size: 30rpx; font-weight: 700; color: #1e293b; margin-bottom: 24rpx; }
 .form-input { background: #f8fafc; border: 1rpx solid #e2e8f0; border-radius: 16rpx; padding: 24rpx; font-size: 28rpx; color: #1e293b; margin-bottom: 16rpx; }
 .auth-error { font-size: 22rpx; color: #dc2626; display: block; margin-bottom: 12rpx; }
-.form-btn { background: #10b981; border-radius: 20rpx; padding: 26rpx; text-align: center; color: #fff; font-size: 28rpx; font-weight: 700; margin-top: 8rpx; }
+.form-btn { background: #10b981; border-radius: 20rpx; padding: 26rpx; text-align: center; color: #fff; font-size: 28rpx; font-weight: 700; }
+.form-link { font-size: 24rpx; color: #10b981; text-align: center; display: block; margin-top: 24rpx; }
 
 .about-text { font-size: 24rpx; color: #64748b; text-align: center; white-space: pre-line; }
 </style>
