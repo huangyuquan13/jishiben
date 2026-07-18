@@ -1,8 +1,0 @@
-com\jizhang\controller\BillController.class
-com\jizhang\JizhangApplication.class
-com\jizhang\config\CorsConfig.class
-com\jizhang\entity\Bill.class
-com\jizhang\config\DataInitializer.class
-com\jizhang\service\BillService.class
-com\jizhang\repository\BillRepository.class
-com\jizhang\controller\SettingsController.class

@@ -1,42 +1,59 @@
-# 依赖
+# === 依赖 ===
 node_modules/
 front/node_modules/
 api/node_modules/
 
-# uni-app 组件库（太大了，通过 npm 安装）
-front/uni_modules/
-
-# 环境变量（包含密钥，绝对不能提交）
+# === 密钥（绝对不能提交！）===
 .env
 *.env
+!env.example
 
-# uni-app 编译产物
+# === uni-app ===
+front/unpackage/
+front/uni_modules/
 unpackage/
 dist/
-front/unpackage/
 
-# IDE
+# === 编译产物 ===
+bank/target/
+bank/data/
+*.class
+*.jar
+
+# === AI 辅助文件 ===
+CLAUDE.md
+**/CLAUDE.md
+
+# === 旧项目 ===
+bank/
+
+# === 内网穿透工具 ===
+natapp/
+
+# === 计划文档 ===
+计划/
+
+# === 压缩包 ===
+*.zip
+*.rar
+*.7z
+*.apk
+
+# === 无关文件 ===
+*.svg
+!front/static/**/*.svg
+
+# === IDE / 系统 ===
+.vscode/
+.idea/
 *.swp
 *.swo
 .DS_Store
 Thumbs.db
-
-# Claude / AI 辅助文件
-CLAUDE.md
-**/CLAUDE.md
-
-# 计划文档
-计划/
-
-# 压缩包
-*.zip
-*.rar
-*.7z
-
-# 系统文件
 Desktop.ini
 $RECYCLE.BIN/
 
-# 日志
+# === 日志 ===
 *.log
 npm-debug.log*
+*.trace.db
