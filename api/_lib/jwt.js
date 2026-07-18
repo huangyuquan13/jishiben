@@ -16,7 +16,7 @@ export function verify(token) {
 
 // 从请求头提取用户ID
 export function getUserId(req) {
-  const auth = req.headers.authorization || '';
+  const auth = req.headers.get('authorization') || '';
   const token = auth.replace('Bearer ', '');
   const payload = verify(token);
   return payload?.userId || null;
