@@ -14,6 +14,11 @@
             </view>
         </view>
 
+        <!-- 加载中 -->
+        <view v-if="loading" class="loading-wrap">
+            <view class="spinner" /><text class="loading-text">加载中...</text>
+        </view>
+
         <!-- 月度汇总卡片 -->
         <uni-card margin="24rpx" :is-shadow="true">
             <view class="summary-row">
@@ -115,6 +120,7 @@ const formNote = ref('');
 const formError = ref('');
 const bills = ref([]);
 const stats = ref({ totalIncome: 0, totalExpense: 0, balance: 0 });
+const loading = ref(true);
 
 const expenseCats = ['餐饮', '交通', '购物', '娱乐', '居住', '通讯', '医疗', '教育', '其他'];
 const incomeCats = ['工资', '奖金', '兼职', '理财', '红包', '报销', '其他'];
@@ -123,14 +129,16 @@ const currentCats = computed(() => txType.value === 'expense' ? expenseCats : in
 async function loadData() {
   if (!user.isLogin) {
     bills.value = []; stats.value = { totalIncome: 0, totalExpense: 0, balance: 0 };
-    return;
+    loading.value = false; return;
   }
+  loading.value = true;
   try {
     const month = new Date().toISOString().slice(0, 7);
     const [billData, statData] = await Promise.all([getBills({ pageSize: 50, month }), getStats(month)]);
     bills.value = billData?.records || [];
     stats.value = statData || { totalIncome: 0, totalExpense: 0, balance: 0 };
-  } catch (e) { /* 网络不通静默处理 */ }
+  } catch (e) { /* */ }
+  loading.value = false;
 }
 
 import { onShow } from '@dcloudio/uni-app';
@@ -163,6 +171,10 @@ function goToStats() { uni.navigateTo({ url: '/pages/stats/stats' }); }
 
 <style scoped>
 .home-container { min-height: 100vh; background: #f8fafc; padding-bottom: 120rpx; }
+.loading-wrap { display: flex; flex-direction: column; align-items: center; padding: 100rpx 0; }
+.spinner { width: 48rpx; height: 48rpx; border: 4rpx solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 24rpx; color: #94a3b8; margin-top: 16rpx; }
 .home-header { background: #fff; padding: 30rpx 32rpx 24rpx; display: flex; justify-content: space-between; align-items: center; border-bottom: 1rpx solid #f1f5f9; }
 .header-left { display: flex; flex-direction: column; }
 .header-title { font-size: 40rpx; font-weight: 800; color: #1e293b; }

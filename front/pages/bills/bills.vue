@@ -1,12 +1,9 @@
 <template>
     <view class="bills-container">
-        <view class="month-bar">
-            <text class="month-arrow" @click="prevMonth">‹</text>
-            <picker mode="date" fields="month" :value="month + '-01'" @change="onMonthChange">
-                <text class="month-text">📅 {{ month }}</text>
-            </picker>
-            <text class="month-arrow" @click="nextMonth">›</text>
-        </view>
+        <MonthPicker v-model="month" @update:model-value="load" />
+
+        <view v-if="loading" class="loading-wrap"><view class="spinner" /><text class="loading-text">加载中...</text></view>
+        <template v-else>
 
         <view class="summary-bar">
             <text class="summary-tag">支出 ¥{{ totalExpense.toFixed(2) }}</text>
@@ -37,6 +34,8 @@
                 <text class="del-btn" @click.stop="handleDelete(bill.id)">🗑</text>
             </view>
         </view>
+
+        </template>
 
         <!-- 编辑弹窗 -->
         <uni-popup ref="editPopupRef" type="bottom" background-color="#fff" :safe-area="false">
@@ -78,6 +77,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import MonthPicker from '@/components/MonthPicker.vue';
 import { getBills, deleteBill, updateBill } from '@/api/bills.js';
 import { useUserStore } from '@/store/user.js';
 
@@ -85,6 +85,7 @@ const user = useUserStore();
 const month = ref(new Date().toISOString().slice(0, 7));
 const filter = ref('all');
 const list = ref([]);
+const loading = ref(true);
 
 // ===== 编辑状态 =====
 const editPopupRef = ref(null);
@@ -132,11 +133,13 @@ async function submitEdit() {
 
 // ===== 列表逻辑 =====
 async function load() {
-  if (!user.isLogin) { list.value = []; return; }
+  if (!user.isLogin) { list.value = []; loading.value = false; return; }
+  loading.value = true;
   try {
     const data = await getBills({ pageSize: 200, month: month.value });
     list.value = data?.records || [];
   } catch (e) { /* */ }
+  loading.value = false;
 }
 
 import { onShow } from '@dcloudio/uni-app';
@@ -145,16 +148,6 @@ onShow(() => load());
 const filteredList = computed(() => list.value.filter(b => filter.value === 'all' || b.type === filter.value));
 const totalExpense = computed(() => list.value.filter(b => b.type === 'expense').reduce((s, b) => s + b.amount, 0));
 const totalIncome = computed(() => list.value.filter(b => b.type === 'income').reduce((s, b) => s + b.amount, 0));
-
-function prevMonth() {
-  const d = new Date(month.value + '-01'); d.setMonth(d.getMonth() - 1);
-  month.value = d.toISOString().slice(0, 7); load();
-}
-function nextMonth() {
-  const d = new Date(month.value + '-01'); d.setMonth(d.getMonth() + 1);
-  month.value = d.toISOString().slice(0, 7); load();
-}
-function onMonthChange(e) { month.value = e.detail.value.slice(0, 7); load(); }
 
 async function handleDelete(id) {
   const { confirm } = await uni.showModal({ title: '确认删除？' });
@@ -168,9 +161,10 @@ async function handleDelete(id) {
 
 <style scoped>
 .bills-container { min-height: 100vh; background: #f8fafc; padding-bottom: 120rpx; }
-.month-bar { display: flex; align-items: center; justify-content: center; background: #fff; padding: 20rpx; }
-.month-arrow { font-size: 48rpx; color: #64748b; padding: 0 32rpx; }
-.month-text { font-size: 28rpx; font-weight: 700; }
+.loading-wrap { display: flex; flex-direction: column; align-items: center; padding: 160rpx 0; }
+.spinner { width: 48rpx; height: 48rpx; border: 4rpx solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 24rpx; color: #94a3b8; margin-top: 16rpx; }
 .summary-bar { display: flex; gap: 16rpx; padding: 16rpx 24rpx; background: #fff; }
 .summary-tag { font-size: 22rpx; padding: 8rpx 20rpx; background: #f1f5f9; border-radius: 20rpx; color: #64748b; }
 .summary-tag.income { color: #10b981; }

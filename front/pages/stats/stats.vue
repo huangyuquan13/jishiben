@@ -1,10 +1,9 @@
 <template>
     <view class="stats-container">
-        <view class="month-bar">
-            <picker mode="date" fields="month" :value="month + '-01'" @change="onMonthChange">
-                <text class="month-text">📅 {{ month }}</text>
-            </picker>
-        </view>
+        <MonthPicker v-model="month" @update:model-value="load" />
+
+        <view v-if="loading" class="loading-wrap"><view class="spinner" /><text class="loading-text">加载中...</text></view>
+        <template v-else>
 
         <view v-if="!hasData" class="empty-state">
             <text class="empty-icon">📊</text>
@@ -31,11 +30,13 @@
                 <view class="chart-wrap"><view id="barChart" class="chart-box"></view></view>
             </uni-card>
         </template>
+        </template>
     </view>
 </template>
 
 <script setup>
 import { ref, computed, nextTick } from 'vue';
+import MonthPicker from '@/components/MonthPicker.vue';
 import { getStats } from '@/api/bills.js';
 import { useUserStore } from '@/store/user.js';
 import { onShow } from '@dcloudio/uni-app';
@@ -44,23 +45,25 @@ import * as echarts from 'echarts';
 const user = useUserStore();
 const month = ref(new Date().toISOString().slice(0, 7));
 const stats = ref({ totalIncome: 0, totalExpense: 0, balance: 0, recordCount: 0, categoryRanking: [] });
+const loading = ref(true);
 const hasData = computed(() => stats.value.recordCount > 0);
 
 let pieChart = null;
 let barChart = null;
 
 async function load() {
-  if (!user.isLogin) { stats.value = { totalIncome: 0, totalExpense: 0, balance: 0, recordCount: 0, categoryRanking: [] }; return; }
+  if (!user.isLogin) { stats.value = { totalIncome: 0, totalExpense: 0, balance: 0, recordCount: 0, categoryRanking: [] }; loading.value = false; return; }
+  loading.value = true;
   try {
     stats.value = await getStats(month.value) || stats.value;
     await nextTick();
     renderCharts();
   } catch (e) { /* */ }
+  loading.value = false;
 }
 
 onShow(() => { load(); });
 
-function onMonthChange(e) { month.value = e.detail.value.slice(0, 7); load(); }
 function fmt(n) { return (n || 0).toFixed(2); }
 
 function renderCharts() {
@@ -102,8 +105,10 @@ function renderCharts() {
 
 <style scoped>
 .stats-container { min-height: 100vh; background: #f8fafc; padding-bottom: 120rpx; }
-.month-bar { background: #fff; padding: 20rpx; text-align: center; }
-.month-text { font-size: 28rpx; font-weight: 700; }
+.loading-wrap { display: flex; flex-direction: column; align-items: center; padding: 160rpx 0; }
+.spinner { width: 48rpx; height: 48rpx; border: 4rpx solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 24rpx; color: #94a3b8; margin-top: 16rpx; }
 .empty-state { text-align: center; padding: 160rpx 0; }
 .empty-icon { font-size: 80rpx; display: block; }
 .empty-text { font-size: 26rpx; color: #94a3b8; margin-top: 16rpx; }
