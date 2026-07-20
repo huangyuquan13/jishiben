@@ -22,9 +22,10 @@ export function request(url, options = {}) {
         const { statusCode, data: resData } = res;
         if (statusCode === 401) {
           uni.removeStorageSync('token');
-          uni.removeStorageSync('user');
-          uni.reLaunch({ url: '/pages/my/my' });
-          return reject(new Error('请先登录'));
+          uni.removeStorageSync('userId');
+          uni.removeStorageSync('nickname');
+          uni.reLaunch({ url: '/pages/login/login' });
+          return reject(new Error('登录已过期，请重新登录'));
         }
         if (resData.code === 0) {
           resolve(resData.data);
