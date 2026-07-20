@@ -1,6 +1,12 @@
 <template>
     <view class="stats-container">
-        <MonthPicker v-model="month" @update:model-value="load" />
+        <view class="month-bar">
+            <text class="arrow" @click="prevMonth">‹</text>
+            <picker mode="date" fields="month" :value="month + '-01'" @change="onPick">
+                <text class="month-text">📅 {{ displayMonth }}</text>
+            </picker>
+            <text class="arrow" @click="nextMonth">›</text>
+        </view>
 
         <view v-if="loading" class="loading-wrap"><view class="spinner" /><text class="loading-text">加载中...</text></view>
         <view v-else-if="!hasData" class="empty-state">
@@ -27,7 +33,6 @@
 
 <script setup>
 import { ref, computed, nextTick } from 'vue';
-import MonthPicker from '@/components/MonthPicker.vue';
 import { getStats } from '@/api/bills.js';
 import { useUserStore } from '@/store/user.js';
 import { onShow } from '@dcloudio/uni-app';
@@ -38,6 +43,10 @@ const month = ref(new Date().toISOString().slice(0, 7));
 const stats = ref({ totalIncome: 0, totalExpense: 0, balance: 0, recordCount: 0, categoryRanking: [] });
 const loading = ref(true);
 const hasData = computed(() => stats.value.recordCount > 0);
+const displayMonth = computed(() => {
+  const [y, m] = month.value.split('-');
+  return `${y}年${m}月`;
+});
 
 let pieChart = null;
 let barChart = null;
@@ -53,31 +62,30 @@ async function load() {
   loading.value = false;
 }
 
-onShow(() => { load(); });
+onShow(() => load());
 
+function prevMonth() {
+  const d = new Date(month.value + '-01'); d.setMonth(d.getMonth() - 1);
+  month.value = d.toISOString().slice(0, 7); load();
+}
+function nextMonth() {
+  const d = new Date(month.value + '-01'); d.setMonth(d.getMonth() + 1);
+  month.value = d.toISOString().slice(0, 7); load();
+}
+function onPick(e) { month.value = e.detail.value.slice(0, 7); load(); }
 function fmt(n) { return (n || 0).toFixed(2); }
 
 function renderCharts() {
   if (!hasData.value) return;
-
-  // 饼图
   const pieDom = document.getElementById('pieChart');
   if (pieDom) {
     if (!pieChart) pieChart = echarts.init(pieDom);
-    const pieData = stats.value.categoryRanking.map(c => ({ name: c.name, value: c.amount }));
     pieChart.setOption({
       tooltip: { trigger: 'item', formatter: '{b}: ¥{c}\n占比 {d}%' },
-      series: [{
-        type: 'pie', radius: ['40%', '70%'], center: ['50%', '50%'],
-        data: pieData,
-        label: { formatter: '{b}\n¥{c}' },
-        itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
-      }],
-      color: ['#10b981','#34d399','#6ee7b7','#a7f3d0','#f43f5e','#fb7185','#fda4af','#fecdd3','#fbbf24','#f59e0b'],
+      series: [{ type: 'pie', radius: ['40%','70%'], data: stats.value.categoryRanking.map(c => ({ name: c.name, value: c.amount })), label: { formatter: '{b}\n¥{c}' } }],
+      color: ['#10b981','#34d399','#6ee7b7','#f43f5e','#fb7185','#fda4af','#fbbf24','#f59e0b','#a7f3d0','#fecdd3'],
     });
   }
-
-  // 柱状图
   const barDom = document.getElementById('barChart');
   if (barDom) {
     if (!barChart) barChart = echarts.init(barDom);
@@ -96,6 +104,9 @@ function renderCharts() {
 
 <style scoped>
 .stats-container { min-height: 100vh; background: #f8fafc; padding-bottom: 120rpx; }
+.month-bar { display: flex; align-items: center; justify-content: center; background: #fff; padding: 20rpx; }
+.arrow { font-size: 48rpx; color: #64748b; padding: 0 32rpx; }
+.month-text { font-size: 28rpx; font-weight: 700; color: #1e293b; }
 .loading-wrap { display: flex; flex-direction: column; align-items: center; padding: 160rpx 0; }
 .spinner { width: 48rpx; height: 48rpx; border: 4rpx solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
