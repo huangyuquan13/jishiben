@@ -3,34 +3,25 @@
         <MonthPicker v-model="month" @update:model-value="load" />
 
         <view v-if="loading" class="loading-wrap"><view class="spinner" /><text class="loading-text">加载中...</text></view>
-        <template v-else>
-
-        <view v-if="!hasData" class="empty-state">
+        <view v-else-if="!hasData" class="empty-state">
             <text class="empty-icon">📊</text>
             <text class="empty-text">本月暂无数据</text>
         </view>
-
-        <template v-else>
-            <!-- 汇总卡片 -->
+        <view v-else>
             <view class="summary-cards">
                 <view class="s-card"><text class="s-label">收入</text><text class="s-val income">¥{{ fmt(stats.totalIncome) }}</text></view>
                 <view class="s-card"><text class="s-label">支出</text><text class="s-val expense">¥{{ fmt(stats.totalExpense) }}</text></view>
                 <view class="s-card"><text class="s-label">结余</text><text :class="['s-val', stats.balance >= 0 ? 'income' : 'expense']">¥{{ fmt(stats.balance) }}</text></view>
             </view>
-
-            <!-- 饼图：支出分类占比 -->
             <uni-card margin="24rpx" :is-shadow="true">
                 <uni-section title="支出分类占比" type="line" />
                 <view class="chart-wrap"><view id="pieChart" class="chart-box"></view></view>
             </uni-card>
-
-            <!-- 柱状图：收支对比 -->
             <uni-card margin="24rpx" :is-shadow="true">
                 <uni-section title="收支对比" type="line" />
                 <view class="chart-wrap"><view id="barChart" class="chart-box"></view></view>
             </uni-card>
-        </template>
-        </template>
+        </view>
     </view>
 </template>
 
