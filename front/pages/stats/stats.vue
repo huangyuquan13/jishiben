@@ -21,11 +21,11 @@
             </view>
             <uni-card margin="24rpx" :is-shadow="true">
                 <uni-section title="支出分类占比" type="line" />
-                <view class="chart-wrap"><view id="pieChart" class="chart-box"></view></view>
+                <view class="chart-wrap"><view ref="pieRef" class="chart-box"></view></view>
             </uni-card>
             <uni-card margin="24rpx" :is-shadow="true">
                 <uni-section title="收支对比" type="line" />
-                <view class="chart-wrap"><view id="barChart" class="chart-box"></view></view>
+                <view class="chart-wrap"><view ref="barRef" class="chart-box"></view></view>
             </uni-card>
         </view>
     </view>
@@ -48,6 +48,8 @@ const displayMonth = computed(() => {
   return `${y}年${m}月`;
 });
 
+const pieRef = ref(null);
+const barRef = ref(null);
 let pieChart = null;
 let barChart = null;
 
@@ -57,7 +59,8 @@ async function load() {
   try {
     stats.value = await getStats(month.value) || stats.value;
     await nextTick();
-    renderCharts();
+    // H5 DOM 渲染延迟，多等一帧
+    setTimeout(() => renderCharts(), 300);
   } catch (e) { /* */ }
   loading.value = false;
 }
@@ -77,7 +80,7 @@ function fmt(n) { return (n || 0).toFixed(2); }
 
 function renderCharts() {
   if (!hasData.value) return;
-  const pieDom = document.getElementById('pieChart');
+  const pieDom = pieRef.value?.$el || pieRef.value;
   if (pieDom) {
     if (!pieChart) pieChart = echarts.init(pieDom);
     pieChart.setOption({
@@ -86,7 +89,7 @@ function renderCharts() {
       color: ['#10b981','#34d399','#6ee7b7','#f43f5e','#fb7185','#fda4af','#fbbf24','#f59e0b','#a7f3d0','#fecdd3'],
     });
   }
-  const barDom = document.getElementById('barChart');
+  const barDom = barRef.value?.$el || barRef.value;
   if (barDom) {
     if (!barChart) barChart = echarts.init(barDom);
     barChart.setOption({
