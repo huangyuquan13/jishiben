@@ -55,11 +55,11 @@ let barChart = null;
 
 async function load() {
   if (!user.isLogin) { stats.value = { totalIncome: 0, totalExpense: 0, balance: 0, recordCount: 0, categoryRanking: [] }; loading.value = false; return; }
+  destroyCharts();
   loading.value = true;
   try {
     stats.value = await getStats(month.value) || stats.value;
     await nextTick();
-    // H5 DOM 渲染延迟，多等一帧
     setTimeout(() => renderCharts(), 300);
   } catch (e) { /* */ }
   loading.value = false;
@@ -77,6 +77,11 @@ function nextMonth() {
 }
 function onPick(e) { month.value = e.detail.value.slice(0, 7); load(); }
 function fmt(n) { return (n || 0).toFixed(2); }
+
+function destroyCharts() {
+  if (pieChart) { pieChart.dispose(); pieChart = null; }
+  if (barChart) { barChart.dispose(); barChart = null; }
+}
 
 function renderCharts() {
   if (!hasData.value) return;
