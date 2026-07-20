@@ -123,9 +123,9 @@ function renderCharts() {
 .empty-icon { font-size: 80rpx; display: block; }
 .empty-text { font-size: 26rpx; color: #94a3b8; margin-top: 16rpx; }
 .summary-cards { display: flex; gap: 16rpx; padding: 24rpx; }
-.s-card { flex: 1; background: #fff; border-radius: 16rpx; padding: 24rpx; text-align: center; }
+.s-card { flex: 1; background: #fff; border-radius: 16rpx; padding: 24rpx; display: flex; flex-direction: column; align-items: center; }
 .s-label { font-size: 22rpx; color: #94a3b8; display: block; }
-.s-val { font-size: 36rpx; font-weight: 800; font-family: monospace; display: block; margin-top: 8rpx; }
+.s-val { font-size: 36rpx; font-weight: 800; font-family: monospace; display: block; margin-top: 8rpx; text-align: center; }
 .income { color: #10b981; }
 .expense { color: #f43f5e; }
 .chart-wrap { display: flex; justify-content: center; }

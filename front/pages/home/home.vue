@@ -26,11 +26,11 @@
                     <text class="summary-label">本月收入</text>
                     <text class="summary-amount income">¥{{ fmt(stats.totalIncome) }}</text>
                 </view>
-                <view class="summary-item summary-center">
+                <view class="summary-item">
                     <text class="summary-label">本月支出</text>
                     <text class="summary-amount expense">¥{{ fmt(stats.totalExpense) }}</text>
                 </view>
-                <view class="summary-item summary-right">
+                <view class="summary-item">
                     <text class="summary-label">结余</text>
                     <text :class="['summary-amount', stats.balance >= 0 ? 'income' : 'expense']">¥{{ fmt(stats.balance) }}</text>
                 </view>
@@ -182,10 +182,8 @@ function goToStats() { uni.navigateTo({ url: '/pages/stats/stats' }); }
 .header-action { display: flex; align-items: center; gap: 8rpx; background: #f1f5f9; padding: 12rpx 24rpx; border-radius: 40rpx; }
 .action-text { font-size: 24rpx; color: #64748b; font-weight: 600; }
 .summary-row { display: flex; }
-.summary-item { flex: 1; }
-.summary-center { text-align: center; }
-.summary-right { text-align: right; }
-.summary-label { font-size: 20rpx; color: #94a3b8; font-weight: 600; }
+.summary-item { flex: 1; text-align: center; }
+.summary-label { font-size: 20rpx; color: #94a3b8; font-weight: 600; display: block; }
 .summary-amount { font-size: 44rpx; font-weight: 800; font-family: monospace; display: block; margin-top: 8rpx; }
 .income { color: #10b981; }
 .expense { color: #f43f5e; }
