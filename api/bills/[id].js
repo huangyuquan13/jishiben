@@ -3,6 +3,8 @@ import { bills } from '../_lib/schema.js';
 import { getUserId } from '../_lib/jwt.js';
 import { eq, and } from 'drizzle-orm';
 
+export function OPTIONS() { return new Response(null, { status: 204 }); }
+
 function getId(req) {
   const segments = new URL(req.url).pathname.split('/');
   return segments[segments.length - 1];

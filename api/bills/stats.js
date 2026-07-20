@@ -3,6 +3,7 @@ import { bills } from '../_lib/schema.js';
 import { getUserId } from '../_lib/jwt.js';
 import { eq, and, sql } from 'drizzle-orm';
 
+export function OPTIONS() { return new Response(null, { status: 204 }); }
 export async function GET(req) {
   const userId = getUserId(req);
   if (!userId) return Response.json({ code: 401, message: '请先登录' }, { status: 401 });

@@ -5,6 +5,7 @@ import { v4 as uuid } from 'uuid';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
+export function OPTIONS() { return new Response(null, { status: 204 }); }
 export async function POST(req) {
   const { username, password, nickname } = await req.json();
 

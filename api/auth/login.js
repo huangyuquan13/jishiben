@@ -4,6 +4,7 @@ import { sign } from '../_lib/jwt.js';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 
+export function OPTIONS() { return new Response(null, { status: 204 }); }
 export async function POST(req) {
   const { username, password } = await req.json();
 

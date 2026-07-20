@@ -4,6 +4,7 @@ import { getUserId } from '../_lib/jwt.js';
 import { v4 as uuid } from 'uuid';
 import { eq, and, desc, sql } from 'drizzle-orm';
 
+export function OPTIONS() { return new Response(null, { status: 204 }); }
 export async function GET(req) {
   const userId = getUserId(req);
   if (!userId) return Response.json({ code: 401, message: '请先登录' }, { status: 401 });
