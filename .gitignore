@@ -10,6 +10,7 @@ api/node_modules/
 
 # === uni-app ===
 front/unpackage/
+!front/unpackage/dist/build/web/
 front/uni_modules/
 unpackage/
 dist/
