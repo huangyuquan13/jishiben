@@ -61,11 +61,16 @@
             </uni-card>
         </template>
 
-        <!-- 记账弹窗 -->
-        <uni-popup ref="popupRef" type="bottom" background-color="#fff" :safe-area="false">
+        <!-- 记账弹窗 - 全屏覆盖 -->
+        <uni-popup ref="popupRef" type="bottom" background-color="#fff" :safe-area="false" @change="onPopupChange">
             <view class="popup-wrapper">
                 <!-- 滚动内容区 -->
-                <scroll-view class="popup-scroll" scroll-y>
+                <scroll-view 
+                    class="popup-scroll" 
+                    scroll-y 
+                    :scroll-top="scrollTop"
+                    :scroll-with-animation="true"
+                >
                     <view class="popup-content">
                         <view class="drawer-handle" />
                         <view class="drawer-header">
@@ -86,7 +91,13 @@
                             
                             <uni-section title="日期 & 备注" type="line" />
                             <view class="form-row">
-                                <uni-datetime-picker v-model="formDate" type="date" class="date-picker" />
+                                <!-- 统一使用 picker 下拉式日期选择器 -->
+                                <picker mode="date" :value="formDate" @change="onDateChange" class="date-picker-mobile">
+                                    <view class="picker-display">
+                                        <uni-icons type="calendar" size="16" color="#64748b" />
+                                        <text class="picker-text">{{ formDate }}</text>
+                                    </view>
+                                </picker>
                                 <uni-easyinput v-model="formNote" placeholder="例如：午餐外卖" :input-border="true" class="note-input" />
                             </view>
                         </view>
@@ -126,6 +137,7 @@ const formError = ref('');
 const bills = ref([]);
 const stats = ref({ totalIncome: 0, totalExpense: 0, balance: 0 });
 const loading = ref(true);
+const scrollTop = ref(0); // 用于错误时滚动到顶部
 
 async function loadData() {
   if (!user.isLogin) {
@@ -165,11 +177,34 @@ function fmt(n) {
 
 function openPopup() { 
   formError.value = ''; 
-  popupRef.value.open(); 
+  popupRef.value.open();
+  // 弹窗打开时隐藏 TabBar
+  // #ifndef H5
+  uni.hideTabBar();
+  // #endif
 }
 
 function closePopup() { 
-  popupRef.value.close(); 
+  popupRef.value.close();
+  // 弹窗关闭时显示 TabBar
+  // #ifndef H5
+  uni.showTabBar();
+  // #endif
+}
+
+// 弹窗状态变化
+function onPopupChange(e) {
+  if (!e.show) {
+    // 弹窗关闭时显示 TabBar
+    // #ifndef H5
+    uni.showTabBar();
+    // #endif
+  }
+}
+
+// 手机端日期选择
+function onDateChange(e) {
+  formDate.value = e.detail.value;
 }
 
 async function submitBill() {
@@ -177,6 +212,7 @@ async function submitBill() {
   const amount = parseFloat(formAmount.value);
   if (isNaN(amount) || amount <= 0) { 
     formError.value = '请输入大于 0 的有效金额'; 
+    scrollToTop(); // 错误时滚动到顶部
     return; 
   }
   try {
@@ -194,7 +230,17 @@ async function submitBill() {
     loadData();
   } catch (e) { 
     formError.value = '保存失败，请重试'; 
+    scrollToTop(); // 错误时滚动到顶部
   }
+}
+
+// 滚动到顶部（显示错误提示）
+function scrollToTop() {
+  scrollTop.value = 0;
+  // 强制触发滚动
+  setTimeout(() => {
+    scrollTop.value = 0.1;
+  }, 50);
 }
 
 function goToStats() { 
@@ -309,7 +355,7 @@ function goToStats() {
 .popup-wrapper {
   display: flex;
   flex-direction: column;
-  max-height: 75vh;
+  max-height: 70vh; /* 增加高度，因为 TabBar 已隐藏 */
   border-radius: 40rpx 40rpx 0 0;
   background: #fff;
 }
@@ -365,9 +411,29 @@ function goToStats() {
   align-items: flex-start; 
 }
 
-.date-picker { 
-  flex: 1; 
-  z-index: 10; 
+/* 日期选择器样式 */
+.date-picker-mobile {
+  flex: 1;
+}
+
+.picker-display {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  background: #f8fafc;
+  border: 2rpx solid #e2e8f0;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  transition: border-color 0.2s ease;
+}
+
+.picker-display:active {
+  border-color: #10b981;
+}
+
+.picker-text {
+  font-size: 28rpx;
+  color: #1e293b;
 }
 
 .note-input { 

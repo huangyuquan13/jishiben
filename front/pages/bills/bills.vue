@@ -37,10 +37,15 @@
         </template>
 
         <!-- 编辑弹窗 -->
-        <uni-popup ref="editPopupRef" type="bottom" background-color="#fff" :safe-area="false">
+        <uni-popup ref="editPopupRef" type="bottom" background-color="#fff" :safe-area="false" @change="onEditPopupChange">
             <view class="popup-wrapper">
                 <!-- 滚动内容区 -->
-                <scroll-view class="popup-scroll" scroll-y>
+                <scroll-view 
+                    class="popup-scroll" 
+                    scroll-y 
+                    :scroll-top="editScrollTop"
+                    :scroll-with-animation="true"
+                >
                     <view class="popup-content">
                         <view class="drawer-handle" />
                         <view class="drawer-header">
@@ -61,7 +66,13 @@
                             
                             <uni-section title="日期 & 备注" type="line" />
                             <view class="form-row">
-                                <uni-datetime-picker v-model="editDate" type="date" class="date-picker" />
+                                <!-- 统一使用 picker 下拉式日期选择器 -->
+                                <picker mode="date" :value="editDate" @change="onEditDateChange" class="date-picker-mobile">
+                                    <view class="picker-display">
+                                        <uni-icons type="calendar" size="16" color="#64748b" />
+                                        <text class="picker-text">{{ editDate }}</text>
+                                    </view>
+                                </picker>
                                 <uni-easyinput v-model="editNote" placeholder="例如：午餐外卖" :input-border="true" class="note-input" />
                             </view>
                         </view>
@@ -106,6 +117,7 @@ const editCat = ref('餐饮');
 const editDate = ref('');
 const editNote = ref('');
 const editError = ref('');
+const editScrollTop = ref(0); // 用于错误时滚动到顶部
 
 function openEdit(bill) {
   editingId.value = bill.id;
@@ -116,10 +128,33 @@ function openEdit(bill) {
   editNote.value = bill.note || '';
   editError.value = '';
   editPopupRef.value.open();
+  // 弹窗打开时隐藏 TabBar
+  // #ifndef H5
+  uni.hideTabBar();
+  // #endif
 }
 
 function closeEdit() {
   editPopupRef.value.close();
+  // 弹窗关闭时显示 TabBar
+  // #ifndef H5
+  uni.showTabBar();
+  // #endif
+}
+
+// 手机端日期选择
+function onEditDateChange(e) {
+  editDate.value = e.detail.value;
+}
+
+// 弹窗状态变化
+function onEditPopupChange(e) {
+  if (!e.show) {
+    // 弹窗关闭时显示 TabBar
+    // #ifndef H5
+    uni.showTabBar();
+    // #endif
+  }
 }
 
 async function submitEdit() {
@@ -127,6 +162,7 @@ async function submitEdit() {
   const amount = parseFloat(editAmount.value);
   if (isNaN(amount) || amount <= 0) { 
     editError.value = '请输入大于 0 的有效金额'; 
+    scrollToTop(); // 错误时滚动到顶部
     return; 
   }
   try {
@@ -142,7 +178,17 @@ async function submitEdit() {
     load();
   } catch (e) { 
     editError.value = '保存失败，请重试'; 
+    scrollToTop(); // 错误时滚动到顶部
   }
+}
+
+// 滚动到顶部（显示错误提示）
+function scrollToTop() {
+  editScrollTop.value = 0;
+  // 强制触发滚动
+  setTimeout(() => {
+    editScrollTop.value = 0.1;
+  }, 50);
 }
 
 // ===== 列表逻辑 =====
@@ -237,7 +283,7 @@ async function handleDelete(id) {
 .popup-wrapper {
   display: flex;
   flex-direction: column;
-  max-height: 75vh;
+  max-height: 70vh; /* 增加高度，因为 TabBar 已隐藏 */
   border-radius: 40rpx 40rpx 0 0;
   background: #fff;
 }
@@ -293,9 +339,29 @@ async function handleDelete(id) {
   align-items: flex-start; 
 }
 
-.date-picker { 
-  flex: 1; 
-  z-index: 10; 
+/* 日期选择器样式 */
+.date-picker-mobile {
+  flex: 1;
+}
+
+.picker-display {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  background: #f8fafc;
+  border: 2rpx solid #e2e8f0;
+  border-radius: 16rpx;
+  padding: 24rpx 28rpx;
+  transition: border-color 0.2s ease;
+}
+
+.picker-display:active {
+  border-color: #10b981;
+}
+
+.picker-text {
+  font-size: 28rpx;
+  color: #1e293b;
 }
 
 .note-input { 

@@ -18,6 +18,12 @@ page {
     background-color: #f8fafc;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* 统一 picker 下拉样式 */
+.uni-picker-container {
+    z-index: 9999 !important;
+}
+
 /* 日历弹出层不被弹窗裁切 */
 .uni-date__popup,
 .uni-calendar__popup {
