@@ -25,6 +25,7 @@ bank/data/
 CLAUDE.md
 **/CLAUDE.md
 AGENTS.md
+kimi-code-guide.md
 
 # === 旧项目 ===
 bank/
@@ -44,6 +45,7 @@ natapp/
 # === 无关文件 ===
 *.svg
 !front/static/**/*.svg
+test.json
 
 # === IDE / 系统 ===
 .vscode/
